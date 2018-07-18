@@ -1,11 +1,13 @@
 #! python3
 
-import csv, pprint
+import csv
+
+OUTPUT_NAME = 'Sweet_Skyhooks_Q1_BBALL.csv'
 
 def main():
   # Write header of output csv
   fieldnames = ['Game_ID', 'Player_ID', 'Player_Plus/Minus']
-  with open('Your_Team_Name_Q1_BBALL.csv', 'w', newline='') as output_file:    
+  with open(OUTPUT_NAME, 'w', newline='') as output_file:    
           writer = csv.DictWriter(output_file, fieldnames=fieldnames)
           writer.writeheader()
 
@@ -18,8 +20,6 @@ def main():
   previous_event = None
   game_id = None
   sublist = []
-
-  count = 2
 
   with open('data.csv', newline='') as data_file:
     data_reader = csv.DictReader(data_file)
@@ -36,8 +36,6 @@ def main():
         previous_event = None
         sublist = []
 
-      print(f'{count} {row["Event_Msg_Type_Description"]}'.center(100, '*'))
-
       team_id = row['Team_id_check']
       game_id = row['Game_id']
       period = row['Period']
@@ -47,7 +45,6 @@ def main():
       if period != period_track:
         period_track = period
         teams = {}
-        print('GETTING LINEUP')
         with open('lineup.csv', newline='') as lineup_file:
           lineup_reader = csv.DictReader(lineup_file)
           for lineup_row in lineup_reader:
@@ -64,7 +61,6 @@ def main():
 
       # Sub sublist
       if sublist and event != 'free throw' and (previous_event != 'substitution' or event != 'substitution'):
-        print(sublist)
         for sub in sublist:
           teams[sub['team']] = substitute(sub['p1'], sub['p2'], teams[sub['team']])
         sublist = []
@@ -98,26 +94,17 @@ def main():
         for player in teams[other_team[0]]:
           players[player] -= points
 
-      pprint.pprint(teams)
-      pprint.pprint(players)
-
       previous_event = event
-
-      count += 1
-
-      # if count == 500:
-      #   break
   
   write_output(players, game_id, fieldnames)
 
 # Substitute players
 def substitute(p1, p2, team):
-  print('SUBB')
   new_team = [p2 if p == p1 else p for p in team]
   return new_team
 
 def write_output(players, game_id, fieldnames):
-  with open('Your_Team_Name_Q1_BBALL.csv', 'a', newline='') as output_file:
+  with open(OUTPUT_NAME, 'a', newline='') as output_file:
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
     for id, plus_minus in players.items():
       writer.writerow({'Game_ID': game_id, 'Player_ID': id, 'Player_Plus/Minus': plus_minus})
